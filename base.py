@@ -49,22 +49,24 @@ class Gopay:
 
 
     def login(self, **kwargs):
-        r = self.request.post('/v3/customers/login_with_email', data={'email' : self.email})
+        r = self.request.post('/v3/customers/login_with_email', data={'email': self.email})
         otp = input('Please enter your phone verification token : ')
 
         result = json.loads(r.text)
         login_token = result['data']['login_token']
 
         data = {
-            'scopes' : 'gojek:customer:transaction gojek:customer:readonly',
-            'grant_type' : 'password',
-            'login_token' : login_token,
-            'otp' : otp,
-            'client_id' : 'gojek:cons:android',
-            'client_secret' : self.request.secret
+            'scopes': 'gojek:customer:transaction gojek:customer:readonly',
+            'grant_type': 'otp',
+            'data': {
+                'otp_token': login_token,
+                'otp': otp,
+            },
+            'client_name': 'gojek:cons:ios',
+            'client_secret': self.request.secret
         }
 
-        r = self.request.post('/v3/customers/token', data=data)
+        r = self.request.post('/v3/customers/verify', data=data)
 
         self.request.token = json.loads(r.text)['data']['access_token']
 
